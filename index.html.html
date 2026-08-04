@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-tag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biotech Hub - منصة الكورسات</title>
+    <style>
+        /* ================= CSS ================= */
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --primary: #06b6d4; 
+            --primary-hover: #0891b2;
+            --text-light: #f4f4f5;
+            --text-muted: #a1a1aa;
+        }
+
+        /* تفعيل السكرول الناعم بدون لاج */
+        html { scroll-behavior: smooth; }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            /* تحسين أداء السكرول في المتصفحات */
+            overflow-x: hidden; 
+        }
+
+        /* شريط التنقل (تم إلغاء الـ Blur لمعالجة اللاج) */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: rgba(9, 9, 11, 0.98); 
+            padding: 15px 5%; position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar .logo { 
+            color: var(--primary); font-size: 26px; font-weight: 900; 
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+            letter-spacing: 1px;
+        }
+
+        .nav-links { list-style: none; display: flex; align-items: center; gap: 25px; }
+        .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--primary); }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--text-muted);
+            color: var(--text-light); padding: 6px 15px; border-radius: 20px; cursor: pointer; transition: 0.3s;
+        }
+        .lang-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .login-btn {
+            background-color: var(--primary); color: var(--bg-dark); border: none;
+            padding: 10px 24px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .login-btn:hover { background-color: var(--primary-hover); color: #fff; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4); transform: translateY(-2px); }
+
+        /* القسم الرئيسي مع الصورة الجديدة اللي بعتها */
+        .hero {
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            text-align: center; 
+            background: linear-gradient(to bottom, rgba(9, 9, 11, 0.6), rgba(9, 9, 11, 1)), 
+                        url('ax.jpg.jpg') no-repeat center center/cover;
+            padding: 20px;
+        }
+
+        /* تم إزالة الـ Blur من هنا أيضاً لتسريع الأداء */
+        .hero-content {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .hero-content h1 { font-size: 3.5rem; margin-bottom: 20px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .hero-content p { font-size: 1.2rem; color: #e4e4e7; margin-bottom: 40px; max-width: 600px; margin-inline: auto; line-height: 1.8; }
+
+        .cta-btn {
+            background-color: var(--primary); color: var(--bg-dark);
+            padding: 15px 35px; text-decoration: none; border-radius: 30px; font-size: 1.1rem; font-weight: bold; transition: 0.3s;
+            display: inline-block;
+        }
+        .cta-btn:hover { background-color: #fff; color: var(--primary); box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3); transform: translateY(-3px); }
+
+        /* شاشة تسجيل الدخول */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card); padding: 40px; border-radius: 16px;
+            width: 90%; max-width: 400px; text-align: center; position: relative; 
+            border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; color: var(--text-muted); cursor: pointer; }
+        .close-btn:hover { color: var(--primary); }
+
+        .modal-content h2 { margin-bottom: 10px; color: #fff; }
+        .modal-content p { color: var(--text-muted); margin-bottom: 25px; font-size: 0.9rem; }
+        .modal-content input {
+            width: 100%; padding: 14px; margin-bottom: 15px; background-color: #09090b;
+            border: 1px solid #27272a; border-radius: 8px; color: var(--text-light); outline: none; transition: 0.3s;
+        }
+        .modal-content input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2); }
+
+        .submit-btn {
+            width: 100%; background-color: var(--primary); color: var(--bg-dark); border: none;
+            padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: 0.3s;
+        }
+        .submit-btn:hover { background-color: #fff; color: var(--bg-dark); }
+
+        /* قسم المحاضرات */
+        .lectures-section { padding: 80px 5%; text-align: center; }
+        .lectures-section h2 { font-size: 2.5rem; margin-bottom: 50px; color: #fff; }
+        .lectures-grid { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+
+        .lecture-card {
+            background: linear-gradient(145deg, #18181b, #121214); border: 1px solid #27272a; 
+            border-radius: 16px; width: 340px; padding: 25px; transition: transform 0.3s, border-color 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            /* تحسين أداء الأنيميشن */
+            will-change: transform;
+        }
+        .lecture-card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 15px 40px rgba(6, 182, 212, 0.15); }
+
+        .thumbnail {
+            background-color: #09090b; height: 180px; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; margin-bottom: 20px;
+            border: 1px solid #27272a;
+        }
+        .lock-icon { font-size: 3.5rem; opacity: 0.4; }
+        .lecture-card h3 { margin-bottom: 15px; font-size: 1.3rem; color: #fff; }
+        .lecture-card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.6; }
+
+        .access-btn.disabled {
+            width: 100%; padding: 12px; background-color: #27272a; color: var(--text-muted); 
+            border: none; border-radius: 8px; cursor: not-allowed; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= HTML ================= -->
+    <nav class="navbar">
+        <div class="logo" data-ar="Biotech Hub" data-en="Biotech Hub">Biotech Hub</div>
+        <ul class="nav-links">
+            <li><a href="#home" data-ar="الرئيسية" data-en="Home">الرئيسية</a></li>
+            <li><a href="#lectures" data-ar="المحاضرات" data-en="Lectures">المحاضرات</a></li>
+            <li><button id="lang-btn" class="lang-btn">English</button></li>
+            <li><button id="open-login" class="login-btn" data-ar="سجل دخولك" data-en="Login">سجل دخولك</button></li>
+        </ul>
+    </nav>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-login" class="close-btn">&times;</span>
+            <h2 data-ar="خش بحسابك" data-en="Login to your account">خش بحسابك</h2>
+            <p data-ar="عشان تشوف الفيديوهات المقفولة" data-en="To access the locked videos">عشان تشوف الفيديوهات المقفولة</p>
+            <input type="text" id="username" data-placeholder-ar="اليوزر نيم بتاعك" data-placeholder-en="Username" placeholder="اليوزر نيم بتاعك">
+            <input type="password" id="password" data-placeholder-ar="الباسوورد" data-placeholder-en="Password" placeholder="الباسوورد">
+            <button class="submit-btn" id="submit-btn" data-ar="يلا بينا" data-en="Let's Go">يلا بينا</button>
+        </div>
+    </div>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 data-ar="يا هلا بيك في Biotech Hub" data-en="Welcome to Biotech Hub">يا هلا بيك في Biotech Hub</h1>
+            <p data-ar="المكان ده معمول مخصوص عشان تلاقي فيه كل المحاضرات بأعلى جودة. لو معاك الأكسس، خش بحسابك وعيش." data-en="This platform is designed to provide you with the best quality lectures. If you have access, log in and enjoy.">المكان ده معمول مخصوص عشان تلاقي فيه كل المحاضرات بأعلى جودة. لو معاك الأكسس، خش بحسابك وعيش.</p>
+            <a href="#lectures" class="cta-btn" data-ar="فرّجني على المحاضرات" data-en="Browse Lectures">فرّجني على المحاضرات</a>
+        </div>
+    </section>
+
+    <section id="lectures" class="lectures-section">
+        <h2 data-ar="محاضرات الكورس" data-en="Course Lectures">محاضرات الكورس</h2>
+        <div class="lectures-grid">
+            
+            <div id="lecture-1" class="lecture-card locked">
+                <div class="thumbnail"><span class="lock-icon">🔒</span></div>
+                <h3 data-ar="المحاضرة الأولى: مقدمة في التكنولوجيا الحيوية" data-en="Lecture 1: Intro to Biotech">المحاضرة الأولى: مقدمة في التكنولوجيا الحيوية</h3>
+                <p data-ar="المحاضرة دي مقفولة، لازم اليوزر نيم والباسوورد عشان تتفتحلك." data-en="This lecture is locked. You need a username and password to access it.">المحاضرة دي مقفولة، لازم اليوزر نيم والباسوورد عشان تتفتحلك.</p>
+                <button class="access-btn disabled" data-ar="مقفول" data-en="Locked">مقفول</button>
+            </div>
+
+            <div class="lecture-card locked">
+                <div class="thumbnail"><span class="lock-icon">🔒</span></div>
+                <h3 data-ar="المحاضرة التانية: تطبيقات وتجارب معملية" data-en="Lecture 2: Lab Applications">المحاضرة التانية: تطبيقات وتجارب معملية</h3>
+                <p data-ar="المحاضرة دي مقفولة، لازم اليوزر نيم والباسوورد عشان تتفتحلك." data-en="This lecture is locked. You need a username and password to access it.">المحاضرة دي مقفولة، لازم اليوزر نيم والباسوورد عشان تتفتحلك.</p>
+                <button class="access-btn disabled" data-ar="مقفول" data-en="Locked">مقفول</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= JavaScript ================= -->
+    <script>
+        const modal = document.getElementById('login-modal');
+        const openLoginBtn = document.getElementById('open-login');
+        const closeBtn = document.getElementById('close-login');
+
+        openLoginBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+        closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+        window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+        const langBtn = document.getElementById('lang-btn');
+        const htmlTag = document.getElementById('html-tag');
+        let currentLang = 'ar';
+
+        langBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            if (currentLang === 'en') {
+                htmlTag.setAttribute('dir', 'ltr');
+                langBtn.textContent = 'عربي';
+            } else {
+                htmlTag.setAttribute('dir', 'rtl');
+                langBtn.textContent = 'English';
+            }
+            
+            document.querySelectorAll('[data-ar]').forEach(el => {
+                el.textContent = el.getAttribute(`data-${currentLang}`);
+            });
+            
+            document.querySelectorAll('[data-placeholder-ar]').forEach(input => {
+                input.setAttribute('placeholder', input.getAttribute(`data-placeholder-${currentLang}`));
+            });
+        });
+
+        const submitBtn = document.getElementById('submit-btn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const lecture1 = document.getElementById('lecture-1');
+
+        submitBtn.addEventListener('click', () => {
+            const user = usernameInput.value;
+            const pass = passwordInput.value;
+
+            if (user === "student" && pass === "123") {
+                alert(currentLang === 'ar' ? "تم تسجيل الدخول بنجاح! الفيديوهات اتفتحت ليك." : "Login successful! Videos unlocked.");
+                modal.style.display = 'none';
+                openLoginBtn.textContent = currentLang === 'ar' ? 'مرحباً student' : 'Welcome student';
+                openLoginBtn.style.backgroundColor = '#10b981'; 
+                openLoginBtn.style.color = '#fff';
+
+                lecture1.innerHTML = `
+                    <div class="video-container" style="margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid #27272a; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+                        <video width="100%" controls controlsList="nodownload">
+                            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <h3 data-ar="المحاضرة الأولى: مقدمة في التكنولوجيا الحيوية" data-en="Lecture 1: Intro to Biotech" style="color: #fff;">المحاضرة الأولى: مقدمة في التكنولوجيا الحيوية</h3>
+                    <p data-ar="المحاضرة دي مفتوحة ليك دلوقتي وتقدر تتفرج عليها براحتك." data-en="This lecture is now unlocked. You can watch it.">المحاضرة دي مفتوحة ليك دلوقتي وتقدر تتفرج عليها براحتك.</p>
+                `;
+            } 
+            else {
+                alert(currentLang === 'ar' ? "اليوزر نيم أو الباسوورد غلط، جرب تاني!" : "Wrong username or password, try again!");
+            }
+        });
+    </script>
+</body>
+</html>
