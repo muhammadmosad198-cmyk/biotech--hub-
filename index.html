@@ -7,8 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- مكتبة Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ================= CSS ================= */
 :root {
@@ -1185,7 +1183,7 @@ body {
         <span id="close-login" class="close-btn">&times;</span>
         <h2 data-ar="خش بحسابك" data-en="Login to your account">خش بحسابك</h2>
         <p data-ar="عشان تشوف الفيديوهات المقفولة" data-en="To access the locked videos">عشان تشوف الفيديوهات المقفولة</p>
-        <input type="email" id="username" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address" placeholder="البريد الإلكتروني">
+        <input type="text" id="username" data-placeholder-ar="اليوزر نيم بتاعك" data-placeholder-en="Username" placeholder="اليوزر نيم بتاعك">
         <input type="password" id="password" data-placeholder-ar="الباسوورد" data-placeholder-en="Password" placeholder="الباسوورد">
         <div id="modal-error" class="modal-error"></div>
         <button class="submit-btn" id="submit-btn" data-ar="يلا بينا" data-en="Let's Go">يلا بينا</button>
@@ -1265,37 +1263,25 @@ body {
 
 <!-- ================= JavaScript ================= -->
 <script>
-// ---------- Supabase Integration Config ----------
-const SUPABASE_URL = 'https://jeahvvcbcjjpbmmlcizp.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_S_CilNf-I5Hl9pXw42qTSg_QPREXUWK';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+// ---------- Critical Fix: Make sure login button always works ----------
 document.addEventListener('DOMContentLoaded', function() {
+    // Fix: Login button should always open modal when clicked
     const openLoginBtn = document.getElementById('open-login');
     const modal = document.getElementById('login-modal');
     const closeBtn = document.getElementById('close-login');
     const modalError = document.getElementById('modal-error');
-    const submitBtn = document.getElementById('submit-btn');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
 
-    // Login Modal Handlers
-    if (openLoginBtn) {
-        openLoginBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            modal.style.display = 'flex';
-            if (modalError) {
-                modalError.classList.remove('show');
-                modalError.textContent = '';
-            }
-        });
-    }
+    // Always open modal on login button click - FIXED
+    openLoginBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.style.display = 'flex';
+        modalError.classList.remove('show');
+        modalError.textContent = '';
+    });
 
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-    }
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
 
     window.addEventListener('click', function(e) {
         if (e.target === modal) {
@@ -1304,18 +1290,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ---------- Logout Function ----------
-    async function logoutUser() {
-        try {
-            await supabaseClient.auth.signOut();
-        } catch (err) {
-            console.log("No active session to sign out");
-        }
+    function logoutUser() {
+        // Clear login state
+        localStorage.removeItem('isLoggedIn');
         
-        lockAllLectures();
-        resetLoggedOutUI();
+        // Reset UI
+        const loginBtn = document.getElementById('open-login');
+        const navLogoutBtn = document.getElementById('navLogoutBtn');
+        const sidebarLogout = document.getElementById('sidebarLogout');
+        const sidebarUser = document.getElementById('sidebarUser');
         
         const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+        loginBtn.textContent = currentLang === 'ar' ? 'سجل دخولك' : 'Login';
+        loginBtn.classList.remove('logged-in');
+        navLogoutBtn.classList.remove('visible');
+        sidebarLogout.classList.remove('visible');
+        sidebarUser.style.display = 'none';
+        
+        // Relock lectures
+        lockAllLectures();
+        
+        // Show toast
         showToast(currentLang === 'ar' ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully', 'success');
+        
+        // Close sidebar if open
         closeSidebarMenu();
     }
 
@@ -1327,13 +1325,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const description = card.querySelector('p');
             const btn = card.querySelector('.access-btn');
             
-            if (!title || !description || !btn) return;
-
             const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-            const titleAr = title.getAttribute('data-ar') || '';
-            const titleEn = title.getAttribute('data-en') || '';
-            const descAr = description.getAttribute('data-ar') || '';
-            const descEn = description.getAttribute('data-en') || '';
+            const titleAr = title.getAttribute('data-ar');
+            const titleEn = title.getAttribute('data-en');
+            const descAr = description.getAttribute('data-ar');
+            const descEn = description.getAttribute('data-en');
+            const btnAr = btn.getAttribute('data-ar');
+            const btnEn = btn.getAttribute('data-en');
             
             card.innerHTML = `
                 <div class="thumbnail">
@@ -1365,14 +1363,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const title = card.querySelector('h3');
             const description = card.querySelector('p');
             const btn = card.querySelector('.access-btn');
-
-            if (!title || !description || !btn) return;
             
             const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-            const titleAr = title.getAttribute('data-ar') || '';
-            const titleEn = title.getAttribute('data-en') || '';
-            const descAr = description.getAttribute('data-ar') || '';
-            const descEn = description.getAttribute('data-en') || '';
+            const titleAr = title.getAttribute('data-ar');
+            const titleEn = title.getAttribute('data-en');
+            const descAr = description.getAttribute('data-ar');
+            const descEn = description.getAttribute('data-en');
+            const btnAr = btn.getAttribute('data-ar');
+            const btnEn = btn.getAttribute('data-en');
             
             card.innerHTML = `
                 <div class="video-container">
@@ -1390,83 +1388,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ---------- Show Logged In UI ----------
-    function showLoggedInUI(user) {
-        const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
+    function showLoggedInUI() {
         const loginBtn = document.getElementById('open-login');
         const navLogoutBtn = document.getElementById('navLogoutBtn');
         const sidebarLogout = document.getElementById('sidebarLogout');
         const sidebarUser = document.getElementById('sidebarUser');
         const userName = document.getElementById('sidebarUserName');
-        const userAvatar = document.getElementById('userAvatar');
         
         const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-        if (loginBtn) {
-            loginBtn.textContent = (currentLang === 'ar' ? 'مرحباً ' : 'Welcome ') + displayName;
-            loginBtn.classList.add('logged-in');
-        }
-        if (navLogoutBtn) navLogoutBtn.classList.add('visible');
-        if (sidebarLogout) sidebarLogout.classList.add('visible');
-        if (sidebarUser) sidebarUser.style.display = 'flex';
-        if (userName) userName.textContent = displayName;
-        if (userAvatar) userAvatar.textContent = displayName.charAt(0).toUpperCase();
+        loginBtn.textContent = currentLang === 'ar' ? 'مرحباً student' : 'Welcome student';
+        loginBtn.classList.add('logged-in');
+        navLogoutBtn.classList.add('visible');
+        sidebarLogout.classList.add('visible');
+        sidebarUser.style.display = 'flex';
+        userName.textContent = 'student';
     }
 
-    // ---------- Reset Logged Out UI ----------
-    function resetLoggedOutUI() {
-        const loginBtn = document.getElementById('open-login');
-        const navLogoutBtn = document.getElementById('navLogoutBtn');
-        const sidebarLogout = document.getElementById('sidebarLogout');
-        const sidebarUser = document.getElementById('sidebarUser');
-        
-        const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-        if (loginBtn) {
-            loginBtn.textContent = currentLang === 'ar' ? 'سجل دخولك' : 'Login';
-            loginBtn.classList.remove('logged-in');
-        }
-        if (navLogoutBtn) navLogoutBtn.classList.remove('visible');
-        if (sidebarLogout) sidebarLogout.classList.remove('visible');
-        if (sidebarUser) sidebarUser.style.display = 'none';
-    }
-
-    // ---------- Check Login State via Supabase Session ----------
-    async function checkAuthSession() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && session.user) {
-            showLoggedInUI(session.user);
+    // ---------- Check Login State ----------
+    function checkLoginState() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        if (isLoggedIn) {
             unlockAllLectures();
-        } else {
-            lockAllLectures();
-            resetLoggedOutUI();
+            showLoggedInUI();
         }
     }
-
-    // Real-time Auth Listener
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-            showLoggedInUI(session.user);
-            unlockAllLectures();
-        } else if (event === 'SIGNED_OUT') {
-            lockAllLectures();
-            resetLoggedOutUI();
-        }
-    });
 
     // ---------- Toast System ----------
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
-        const toastIcon = toast?.querySelector('.toast-icon');
-        const toastMessage = toast?.querySelector('.toast-message');
+        const toastIcon = toast.querySelector('.toast-icon');
+        const toastMessage = toast.querySelector('.toast-message');
         
-        if (!toast) return;
         toast.className = 'toast';
-        if (toastMessage) toastMessage.textContent = message;
+        toastMessage.textContent = message;
         
         if (type === 'success') {
             toast.classList.add('success');
-            if (toastIcon) toastIcon.textContent = '✓';
+            toastIcon.textContent = '✓';
         } else if (type === 'error') {
             toast.classList.add('error');
-            if (toastIcon) toastIcon.textContent = '✕';
+            toastIcon.textContent = '✕';
         }
         
         toast.classList.add('show');
@@ -1484,23 +1445,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeSidebar = document.getElementById('closeSidebar');
 
     function toggleSidebar() {
-        if (sidebar) sidebar.classList.toggle('open');
-        if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
-        if (sidebarToggle) sidebarToggle.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('active');
+        sidebarToggle.classList.toggle('open');
     }
 
     function closeSidebarMenu() {
-        if (sidebar) sidebar.classList.remove('open');
-        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-        if (sidebarToggle) sidebarToggle.classList.remove('open');
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+        sidebarToggle.classList.remove('open');
     }
 
-    if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-    if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarMenu);
-    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebarMenu);
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    closeSidebar.addEventListener('click', closeSidebarMenu);
+    sidebarOverlay.addEventListener('click', closeSidebarMenu);
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
             closeSidebarMenu();
         }
     });
@@ -1523,104 +1484,79 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ---------- Logout Click Listeners ----------
+    // ---------- Navbar Logout ----------
     const navLogoutBtn = document.getElementById('navLogoutBtn');
-    if (navLogoutBtn) navLogoutBtn.addEventListener('click', logoutUser);
+    navLogoutBtn.addEventListener('click', logoutUser);
 
+    // ---------- Sidebar Logout ----------
     const sidebarLogout = document.getElementById('sidebarLogout');
-    if (sidebarLogout) sidebarLogout.addEventListener('click', logoutUser);
+    sidebarLogout.addEventListener('click', logoutUser);
 
     // ---------- Language toggle ----------
     const langBtn = document.getElementById('lang-btn');
     const htmlTag = document.getElementById('html-tag');
     let currentLang = 'ar';
 
-    if (langBtn) {
-        langBtn.addEventListener('click', function() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            if (currentLang === 'en') {
-                if (htmlTag) {
-                    htmlTag.setAttribute('dir', 'ltr');
-                    htmlTag.lang = 'en';
-                }
-                langBtn.textContent = 'عربي';
-            } else {
-                if (htmlTag) {
-                    htmlTag.setAttribute('dir', 'rtl');
-                    htmlTag.lang = 'ar';
-                }
-                langBtn.textContent = 'English';
-            }
+    langBtn.addEventListener('click', function() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        if (currentLang === 'en') {
+            htmlTag.setAttribute('dir', 'ltr');
+            htmlTag.lang = 'en';
+            langBtn.textContent = 'عربي';
+        } else {
+            htmlTag.setAttribute('dir', 'rtl');
+            htmlTag.lang = 'ar';
+            langBtn.textContent = 'English';
+        }
 
-            document.querySelectorAll('[data-ar]').forEach(function(el) {
-                el.textContent = el.getAttribute('data-' + currentLang);
-            });
-
-            document.querySelectorAll('[data-placeholder-ar]').forEach(function(input) {
-                input.setAttribute('placeholder', input.getAttribute('data-placeholder-' + currentLang));
-            });
-
-            updateWhatsAppTooltip();
-            updateSidebarLanguage();
+        document.querySelectorAll('[data-ar]').forEach(function(el) {
+            el.textContent = el.getAttribute('data-' + currentLang);
         });
-    }
 
-    // ---------- Supabase Login Submit ----------
-    if (submitBtn) {
-        submitBtn.addEventListener('click', async function() {
-            const email = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (!email || !password) {
-                const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-                if (modalError) {
-                    modalError.textContent = currentLang === 'ar' ? 'برجاء إدخال الإيميل والباسوورد' : 'Please enter email and password';
-                    modalError.classList.add('show');
-                }
-                return;
-            }
-
-            submitBtn.disabled = true;
-            const origText = submitBtn.textContent;
-            submitBtn.textContent = '...';
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-            submitBtn.disabled = false;
-            submitBtn.textContent = origText;
-
-            if (error) {
-                const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-                if (modalError) {
-                    modalError.textContent = currentLang === 'ar' ? 'الإيميل أو الباسوورد غير صحيح!' : 'Invalid email or password!';
-                    modalError.classList.add('show');
-                }
-                passwordInput.value = '';
-            } else {
-                document.getElementById('login-modal').style.display = 'none';
-                if (modalError) {
-                    modalError.classList.remove('show');
-                    modalError.textContent = '';
-                }
-                
-                showLoggedInUI(data.user);
-                unlockAllLectures();
-                
-                const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-                showToast(currentLang === 'ar' ? 'تم تسجيل الدخول بنجاح! الفيديوهات اتفتحت ليك.' : 'Login successful! Videos unlocked.', 'success');
-                
-                usernameInput.value = '';
-                passwordInput.value = '';
-            }
+        document.querySelectorAll('[data-placeholder-ar]').forEach(function(input) {
+            input.setAttribute('placeholder', input.getAttribute('data-placeholder-' + currentLang));
         });
-    }
+
+        updateWhatsAppTooltip();
+        updateSidebarLanguage();
+    });
+
+    // ---------- Login Logic ----------
+    const submitBtn = document.getElementById('submit-btn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    submitBtn.addEventListener('click', function() {
+        const user = usernameInput.value.trim();
+        const pass = passwordInput.value.trim();
+
+        if (user === "student" && pass === "123") {
+            document.getElementById('login-modal').style.display = 'none';
+            modalError.classList.remove('show');
+            modalError.textContent = '';
+            
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            showLoggedInUI();
+            unlockAllLectures();
+            
+            const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+            showToast(currentLang === 'ar' ? 'تم تسجيل الدخول بنجاح! الفيديوهات اتفتحت ليك.' : 'Login successful! Videos unlocked.', 'success');
+            
+            usernameInput.value = '';
+            passwordInput.value = '';
+        }
+        else {
+            const currentLang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+            modalError.textContent = currentLang === 'ar' ? 'اليوزر نيم أو الباسوورد غلط، جرب تاني!' : 'Wrong username or password, try again!';
+            modalError.classList.add('show');
+            passwordInput.value = '';
+        }
+    });
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && document.getElementById('login-modal')?.style.display === 'flex') {
-            if (submitBtn) submitBtn.click();
+        if (e.key === 'Enter' && document.getElementById('login-modal').style.display === 'flex') {
+            submitBtn.click();
         }
     });
 
@@ -1655,7 +1591,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ---------- Build Helices ----------
-    function buildHelix(groupId) {
+    function buildHelix(groupId, colorA, colorB) {
         const g = document.getElementById(groupId);
         if (!g) return;
         const width = 60, height = 340, turns = 3, steps = 40;
@@ -1686,79 +1622,75 @@ document.addEventListener('DOMContentLoaded', function() {
     const field = document.getElementById('molecule-field');
     const bases = ['A', 'T', 'C', 'G'];
     const letterCount = window.innerWidth < 700 ? 14 : 26;
-    if (field) {
-        for (let i = 0; i < letterCount; i++) {
-            const el = document.createElement('span');
-            el.className = 'base-letter' + (Math.random() > 0.5 ? ' violet' : '');
-            el.textContent = bases[Math.floor(Math.random() * bases.length)];
-            el.style.left = Math.random() * 100 + 'vw';
-            el.style.top = (100 + Math.random() * 20) + 'vh';
-            el.style.setProperty('--drift-x', (Math.random() * 80 - 40) + 'px');
-            el.style.animationDuration = (14 + Math.random() * 16) + 's';
-            el.style.animationDelay = (Math.random() * 20) + 's';
-            el.style.fontSize = (11 + Math.random() * 10) + 'px';
-            field.appendChild(el);
-        }
+    for (let i = 0; i < letterCount; i++) {
+        const el = document.createElement('span');
+        el.className = 'base-letter' + (Math.random() > 0.5 ? ' violet' : '');
+        el.textContent = bases[Math.floor(Math.random() * bases.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.top = (100 + Math.random() * 20) + 'vh';
+        el.style.setProperty('--drift-x', (Math.random() * 80 - 40) + 'px');
+        el.style.animationDuration = (14 + Math.random() * 16) + 's';
+        el.style.animationDelay = (Math.random() * 20) + 's';
+        el.style.fontSize = (11 + Math.random() * 10) + 'px';
+        field.appendChild(el);
     }
 
     // ---------- Canvas animation ----------
     const canvas = document.getElementById('helix-canvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        let w, h, dpr;
-        let resizeTimeout;
+    const ctx = canvas.getContext('2d');
+    let w, h, dpr;
+    let resizeTimeout;
 
-        function resize() {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(function() {
-                dpr = Math.min(window.devicePixelRatio || 1, 2);
-                w = canvas.width = window.innerWidth * dpr;
-                h = canvas.height = document.body.scrollHeight * dpr;
-                canvas.style.width = window.innerWidth + 'px';
-                canvas.style.height = document.body.scrollHeight + 'px';
-            }, 150);
+    function resize() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            w = canvas.width = window.innerWidth * dpr;
+            h = canvas.height = document.body.scrollHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = document.body.scrollHeight + 'px';
+        }, 150);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function drawStrand(offsetX, phase, colorA, colorB) {
+        const amplitude = 46 * dpr;
+        const wavelength = 520 * dpr;
+        ctx.beginPath();
+        for (let y = 0; y <= h; y += 6 * dpr) {
+            const x = offsetX + Math.sin((y / wavelength) * Math.PI * 2 + phase) * amplitude;
+            y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
-        resize();
-        window.addEventListener('resize', resize);
+        ctx.strokeStyle = colorA;
+        ctx.lineWidth = 1 * dpr;
+        ctx.globalAlpha = 0.14;
+        ctx.stroke();
 
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        function drawStrand(offsetX, phase, colorA, colorB) {
-            const amplitude = 46 * dpr;
-            const wavelength = 520 * dpr;
-            ctx.beginPath();
-            for (let y = 0; y <= h; y += 6 * dpr) {
-                const x = offsetX + Math.sin((y / wavelength) * Math.PI * 2 + phase) * amplitude;
-                y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = colorA;
-            ctx.lineWidth = 1 * dpr;
-            ctx.globalAlpha = 0.14;
-            ctx.stroke();
-
-            ctx.beginPath();
-            for (let y = 0; y <= h; y += 6 * dpr) {
-                const x = offsetX + Math.sin((y / wavelength) * Math.PI * 2 + phase + Math.PI) * amplitude;
-                y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = colorB;
-            ctx.lineWidth = 1 * dpr;
-            ctx.globalAlpha = 0.14;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
+        ctx.beginPath();
+        for (let y = 0; y <= h; y += 6 * dpr) {
+            const x = offsetX + Math.sin((y / wavelength) * Math.PI * 2 + phase + Math.PI) * amplitude;
+            y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
-
-        function animate(t) {
-            ctx.clearRect(0, 0, w, h);
-            const phase = reduceMotion ? 0 : t / 3000;
-            drawStrand(w * 0.15, phase, '#22d3ee', '#818cf8');
-            drawStrand(w * 0.85, -phase, '#818cf8', '#22d3ee');
-            if (!reduceMotion) requestAnimationFrame(animate);
-        }
-        requestAnimationFrame(animate);
+        ctx.strokeStyle = colorB;
+        ctx.lineWidth = 1 * dpr;
+        ctx.globalAlpha = 0.14;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
     }
 
-    // Initial session check
-    checkAuthSession();
+    function animate(t) {
+        ctx.clearRect(0, 0, w, h);
+        const phase = reduceMotion ? 0 : t / 3000;
+        drawStrand(w * 0.15, phase, '#22d3ee', '#818cf8');
+        drawStrand(w * 0.85, -phase, '#818cf8', '#22d3ee');
+        if (!reduceMotion) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // ---------- Check login state on page load ----------
+    checkLoginState();
     updateWhatsAppTooltip();
     updateSidebarLanguage();
 });
